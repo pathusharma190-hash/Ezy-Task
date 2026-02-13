@@ -1,11 +1,15 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
-import { Task, Priority } from "../types";
+import { Task } from "../types";
 
-// Always use const ai = new GoogleGenAI({apiKey: process.env.API_KEY});
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Helper to get the AI instance safely in browser environments
+const getAI = () => {
+  const apiKey = typeof process !== 'undefined' ? process.env.API_KEY : undefined;
+  return new GoogleGenAI({ apiKey: apiKey || '' });
+};
 
 export const refineTaskDescription = async (task: Partial<Task>): Promise<string> => {
+  const ai = getAI();
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
     contents: `Act as a professional project manager. Refine this task title and description into a concise, actionable instruction: 
@@ -19,6 +23,7 @@ export const refineTaskDescription = async (task: Partial<Task>): Promise<string
 };
 
 export const suggestSubtasks = async (task: Task): Promise<string[]> => {
+  const ai = getAI();
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
     contents: `Based on this task: "${task.title} - ${task.description}", suggest exactly 3-5 concrete subtasks. Return ONLY a JSON array of strings.`,
@@ -39,6 +44,7 @@ export const suggestSubtasks = async (task: Task): Promise<string[]> => {
 };
 
 export const getDailyBriefing = async (tasks: Task[]): Promise<any> => {
+  const ai = getAI();
   const pendingTasks = tasks.filter(t => t.status !== 'Done');
   const taskSummary = pendingTasks.map(t => `${t.title} (Priority: ${t.priority})`).join(", ");
   

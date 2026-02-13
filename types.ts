@@ -1,4 +1,3 @@
-
 export enum Priority {
   LOW = 'Low',
   MEDIUM = 'Medium',
@@ -43,10 +42,4 @@ export interface Task {
   assigneeId?: string;
   attachments: string[];
   createdAt: number;
-}
-
-export interface AIInsight {
-  summary: string;
-  priorityTasks: string[];
-  productivityTip: string;
 }

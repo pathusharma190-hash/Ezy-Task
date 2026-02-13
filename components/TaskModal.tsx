@@ -1,8 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
-import { X, Calendar, Flag, Sparkles, Plus, Trash2, CheckCircle2, Wand2, RefreshCw, User, Paperclip } from 'lucide-react';
+import { X, Calendar, Flag, Plus, Trash2, CheckCircle2, User, Paperclip } from 'lucide-react';
 import { Task, Status, Priority, SubTask, Member } from '../types';
-import { suggestSubtasks, refineTaskDescription } from '../services/geminiService';
 
 interface TaskModalProps {
   isOpen: boolean;
@@ -22,7 +20,6 @@ const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSave, task, me
   const [attachments, setAttachments] = useState<string[]>([]);
   const [assigneeId, setAssigneeId] = useState<string>('');
   const [newSubtaskTitle, setNewSubtaskTitle] = useState('');
-  const [isAiLoading, setIsAiLoading] = useState(false);
 
   useEffect(() => {
     if (task) {
@@ -47,22 +44,6 @@ const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSave, task, me
   }, [task, isOpen]);
 
   if (!isOpen) return null;
-
-  const handleMagicRefine = async () => {
-    if (!title) return;
-    setIsAiLoading(true);
-    const refined = await refineTaskDescription({ title, description });
-    setDescription(refined);
-    setIsAiLoading(false);
-  };
-
-  const handleSuggestSubtasks = async () => {
-    if (!title) return;
-    setIsAiLoading(true);
-    const suggestions = await suggestSubtasks({ title, description } as Task);
-    setSubtasks([...subtasks, ...suggestions.map(s => ({ id: crypto.randomUUID(), title: s, completed: false }))]);
-    setIsAiLoading(false);
-  };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -94,24 +75,13 @@ const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSave, task, me
               required
             />
             
-            <div className="relative">
-              <textarea 
-                placeholder="Briefly describe the objective..." 
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={3}
-                className="w-full bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/60 rounded-2xl p-5 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all text-slate-700 dark:text-slate-300 placeholder-slate-300 dark:placeholder-slate-700"
-              />
-              <button 
-                type="button"
-                onClick={handleMagicRefine}
-                disabled={isAiLoading || !title}
-                className="absolute right-3 bottom-3 flex items-center gap-2 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-indigo-600/10 dark:shadow-indigo-600/20 disabled:opacity-30"
-              >
-                {isAiLoading ? <RefreshCw size={12} className="animate-spin" /> : <Wand2 size={12} />}
-                Optimize Detail
-              </button>
-            </div>
+            <textarea 
+              placeholder="Briefly describe the objective..." 
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+              className="w-full bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/60 rounded-2xl p-5 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all text-slate-700 dark:text-slate-300 placeholder-slate-300 dark:placeholder-slate-700"
+            />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -198,19 +168,9 @@ const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSave, task, me
           )}
 
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
-                Breakdown Actions
-              </label>
-              <button 
-                type="button"
-                onClick={handleSuggestSubtasks}
-                className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/5 dark:bg-indigo-500/5 border border-indigo-500/10 transition-colors"
-              >
-                <Sparkles size={12} />
-                Auto-generate steps
-              </button>
-            </div>
+            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+              Breakdown Actions
+            </label>
             
             <div className="space-y-2">
               {subtasks.map((sub) => (
